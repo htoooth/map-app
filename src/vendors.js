@@ -7,3 +7,6 @@ import Vuex from 'vuex';
 
 import Cookies from 'js-cookie';
 import clipboard from 'clipboard';
+import * as maptalks from 'maptalks';
+import _ from 'lodash';
+

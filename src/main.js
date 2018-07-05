@@ -5,14 +5,17 @@ import Routers from './router';
 import Vuex from 'vuex';
 import Util from './libs/util';
 import App from './app.vue';
-import 'iview/dist/styles/iview.css';
 
+import 'iview/dist/styles/iview.css';
+import 'maptalks/dist/maptalks.css';
+
+import 'static/easy-ui/themes/default/easyui.css';
+import 'static/easy-ui/themes/icon.css';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
 
 Vue.use(iView);
-
 
 
 // 路由配置
