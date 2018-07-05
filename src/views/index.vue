@@ -1,7 +1,9 @@
 <script>
 import * as maptalks from "maptalks";
+import mixin from 'mixin'
 
 export default {
+	mixins: [mixin],
   data() {
     return {
       id: "map"
@@ -18,8 +20,6 @@ export default {
         attribution: "&copy; Google Maps"
       })
 		});
-		
-		window.$.parser.parse();
   },
   methods: {
   },
@@ -46,7 +46,7 @@ export default {
 }
 .container {
   position: absolute;
-  top: 30px;
+  top: 42px;
   right: 0;
   bottom: 0;
   width: 100%;
