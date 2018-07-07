@@ -1,5 +1,7 @@
-import editorToolbar from './editorToolbar.vue';
+import editorToolbar from './editorToolbar';
+import measureToolbar from './measureToolbar';
 
 export {
-    editorToolbar
+    editorToolbar,
+    measureToolbar
 };

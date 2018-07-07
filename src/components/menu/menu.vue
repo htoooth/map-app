@@ -8,7 +8,13 @@ export default {
     submenu: {
       type: Array,
       default() {
-        return []
+        return [];
+      }
+    },
+    opts: {
+      type: Object,
+      default() {
+        return {};
       }
     }
   },
@@ -20,7 +26,12 @@ export default {
   },
   mounted() {
     this.index = Date.now() + this.tempIndex++;
-    this.$menu = $(this.$el).menu();
+
+    let self = this;
+
+    this.$menu = $(this.$el).menu(Object.assign({}, this.opts, {onClick(e) {
+      self.$parent.clicksubmenu && self.$parent.clicksubmenu(e, self.$menu);
+    }}));
 
     this.$nextTick(() => {
       this.submenu.forEach((i) => {
@@ -32,6 +43,24 @@ export default {
     return (
       <div id={this.index}></div>
     );
+  },
+  watch: {
+    submenu: {
+      deep: true,
+      handler(newValue, oldValue) {
+        newValue.forEach(i => {
+          let menuItem = this.$menu.menu('findItem', {name: i.name})
+
+          if (menuItem) {
+            if (i.disabled) {
+              this.$menu.menu('disableItem', menuItem.target)
+            } else {
+              this.$menu.menu('enableItem', menuItem.target)
+            }
+          }
+        })
+      }
+    }
   },
   methods: {
     addItem(i) {

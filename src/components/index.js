@@ -4,6 +4,8 @@ import draggable from './draggable';
 import panel from './panel';
 import combobox from './combobox';
 import toolbar from './toolbar';
+import tree from './tree';
+import maptalks from './maptalks';
 
 export {
   menu,
@@ -11,5 +13,7 @@ export {
   draggable,
   panel,
   combobox,
-  toolbar
+  toolbar,
+  tree,
+  maptalks
 };

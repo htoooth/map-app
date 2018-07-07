@@ -73,8 +73,9 @@ export default {
 
 .easyui-draggable_border {
   background:#fafafa;
-  border:1px solid #ccc;
+  border:1px solid #95b8e7;
   margin-top:10px;
+  margin-left: 10px;
   position:absolute;
   top:0;
   left:0;
@@ -82,12 +83,12 @@ export default {
 
 .easyui-draggable_title {
   padding:5px;
-  background:#ccc;
+  background:#4e91ea;
   color:#fff;
 }
 
 .easyui-draggable_title_drag {
-  background-color: #95b8e7
+  background-color: #95b8e7;
 }
 
 </style>
