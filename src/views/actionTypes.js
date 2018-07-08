@@ -17,6 +17,8 @@ export default keyMirror({
     EDITOR_CREATE_START: null,
     EDITOR_CREATE_END: null,
 
+    EDITOR_REMOVE: null,
+
     MEASURE_LINE: null,
     MEASURE_AREA: null,
     MEASURE_CLEAR: null

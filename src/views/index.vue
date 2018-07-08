@@ -1,5 +1,6 @@
 <script>
 import * as maptalks from "maptalks";
+import _ from 'lodash';
 import mixin from "mixin";
 import { editorToolbar, measureToolbar } from "./components";
 import { menu, menubutton, panel, tree } from "components";
@@ -61,8 +62,10 @@ export default {
           edit: null
         },
         geoms: {
-          select: null,
-          edit: []
+					select: [],
+					created: [],
+					changed: [],
+					modified: []
         },
         status: {
           editMode: false,
@@ -112,35 +115,29 @@ export default {
         if (!self.map.status.select) {
           return;
         }
+				
+				if (self.map.status.modify) {
+					return;
+				}
 
-        layer.forEach(geom => {
-          geom.updateSymbol({
-            lineColor: "#34495e"
-          });
-        });
+				this._clearSelectGeom();
 
-        this.map.$map.identify(
-          {
-            coordinate: e.coordinate,
-            layers: [layer]
-          },
-          function(geoms) {
-            if (geoms.length === 0) {
-              window.logger.info("no geom selected");
-              return;
-            }
+				this._selectGeomsAt(e.coordinate, [layer]).then(geoms => {
+					if (geoms.length === 0) {
+						window.logger.info("no geom selected");
+						return;
+					}
 
-            window.logger.info("%d geom selected", geoms.length);
+					window.logger.info("%d geom selected", geoms.length);
 
-            geoms.forEach(geom => {
-              geom.updateSymbol({
-                lineColor: "#f00"
-              });
-            });
-          }
-        );
+					geoms.forEach(geom => {
+						geom.updateSymbol({
+							lineColor: "#66f0ff"
+						});
+					});
 
-        return false;
+					this.map.geoms.select = geoms;
+				});
       });
 
       this.map.$map.on("dblClick", e => {
@@ -161,10 +158,11 @@ export default {
         .disable();
 
       this.map.tool.drawTool.on("drawend", function(param) {
-        let geometry = param.geometry;
+        let geom = param.geometry;
 
         if (self.map.layers.edit) {
-          self.map.layers.edit.addGeometry(geometry);
+					self.map.layers.edit.addGeometry(geom);
+					self._addCreatedGeoms(geom);
         }
       });
     },
@@ -228,49 +226,54 @@ export default {
           break;
         }
         case actionTypes.EDITOR_SELECT_START: {
-          this.map.status.select = true;
+					this.map.status.select = true;
+					this.map.status.create = false;
           break;
         }
         case actionTypes.EDITOR_SELECT_END: {
-          this.map.status.select = false;
-          this.clearSelectGeom();
+					this.map.status.select = false;
+					this.map.status.modify = false;
+
           break;
         }
         case actionTypes.EDITOR_EDIT_MODE_START: {
           this.map.status.edit = true;
-
           break;
         }
         case actionTypes.EDITOR_EDIT_MODE_SAVE: {
-          this.map.status.edit = false;
+					this.map.status.create = false;
+					this.map.status.select = false;
+					this.map.status.modify = false;
           break;
         }
 
         case actionTypes.EDITOR_EDIT_MODE_END: {
-          this.map.tool.drawTool.disable();
+					this.map.status.edit = false;
+
+					this.map.status.create = false;
+					this.map.status.select = false;
+					this.map.status.modify = false;
           break;
         }
         case actionTypes.EDITOR_CREATE_START: {
-          this.map.tool.drawTool
-            .setMode(this.map.layers.edit.geometryType)
-            .enable();
-          this.map.status.create = true;
+					this.map.status.create = true;
+					this.map.status.select = false;
+					this.map.status.modify = false;
           break;
         }
 
         case actionTypes.EDITOR_CREATE_END: {
-          this.map.tool.drawTool.disable();
           this.map.status.create = false;
           break;
         }
 
         case actionTypes.EDITOR_MODIFY_START: {
-          this.map.status.modify = true;
+					this.map.status.modify = true;
           break;
         }
 
         case actionTypes.EDITOR_MODIFY_END: {
-          this.map.status.modify = false;
+					this.map.status.modify = false;
           break;
         }
         default: {
@@ -302,7 +305,11 @@ export default {
           this.map.tool.distanceTool && this.map.tool.distanceTool.clear();
           this.map.tool.areaTool && this.map.tool.areaTool.clear();
           break;
-        }
+				}
+				case actionTypes.EDITOR_REMOVE: {
+					this._removeGeoms();
+					break;
+				}
         default: {
           window.logger.error("cannot find menu %s", name);
         }
@@ -357,7 +364,7 @@ export default {
 
       window.logger.info("edittoolbar select layer %s", id);
     },
-    clearSelectGeom() {
+    _clearSelectGeom() {
       let layer = this.map.layers.edit ? this.map.layers.edit : null;
 
       if (!layer) {
@@ -369,7 +376,99 @@ export default {
           lineColor: "#34495e"
         });
       });
-    }
+    },
+    _selectGeomsAt(coord, layers) {
+      return new Promise((resolve, reject) => {
+				if (!layers) {
+					layers = this.map.layers.visual;
+				}
+
+				if (!coord) {
+					return resolve([]);
+				}
+
+				this.map.$map.identify(
+					{
+						coordinate: coord,
+						layers
+					},
+					(geoms) => {
+						resolve(geoms);
+					}
+				);
+			});
+		},
+		_startModify() {
+			let geoms = this.map.geoms.select;
+			geoms.forEach(geom => {
+				geom.startEdit();
+			});
+		},
+		_endModify() {
+			let geoms = this.map.geoms.select;
+			geoms.forEach(geom => {
+				geom.endEdit();
+
+				if (geom.isEditing()) {
+					this._addModifiedGeoms(geom);
+				}
+			});
+		},
+		_startCreate() {
+			this.map.tool.drawTool
+        .setMode(this.map.layers.edit.geometryType)
+        .enable();
+		},
+		_endCreate() {
+			this.map.tool.drawTool.disable();
+		},
+		_removeGeoms() {
+			this.map.layers.edit.removeGeometry(this.map.geoms.select);
+			this._addDeletedGeoms(this.map.geoms.select);
+			this.$refs.editortoolbar.resetSelect();
+			this.$refs.editortoolbar.resetModify();
+		},
+		_addDeletedGeoms(geom) {
+			if (_.isArray(geom)) {
+				geom.forEach((g) => {
+					this.map.geoms.deleted.push(g);
+				})
+
+				return;
+			}
+
+			this.map.geoms.deleted.push(geom);
+		},
+		_addCreatedGeoms(geom) {
+			if (_.isArray(geom)) {
+				geom.forEach((g) => {
+					this.map.geoms.created.push(g);
+				})
+
+				return;
+			}
+
+			this.map.geoms.created.push(geom);
+		},
+		_addModifiedGeoms(geom) {
+			if (_.isArray(geom)) {
+				geom.forEach((g) => {
+					this.map.geoms.modified.push(g);
+				})
+
+				return;
+			}
+
+			this.map.geoms.modified.push(geom);
+		},
+		_clearGeoms() {
+			this.map.geoms.deleted = [];
+			this.map.geoms.created = [];
+			this.map.geoms.modified = [];
+		},
+		_resetChanged() {
+
+		}
   },
   components: {
     editorToolbar,
@@ -387,16 +486,48 @@ export default {
           text: i.getId()
         };
       });
-    }
-  },
+		}
+	},
+	watch: {
+		'map.status.select': function(newVal) {
+			this.$nextTick(() => {
+				// 对修改的要素在下轮中清空
+				this.map.geoms.select = [];
+			})
+
+			if (!newVal) {
+				this._clearSelectGeom();
+				this.$refs.editortoolbar.resetSelect();
+			}
+		},
+		'map.status.modify': function(newVal) {
+			if (newVal) {
+				this._startModify();
+			} else {
+				this._endModify();
+				this.$refs.editortoolbar.resetModify();
+			}
+		},
+		'map.status.create': function(newVal) {
+			if (newVal) {
+				this._startCreate();
+			} else {
+				this._endCreate();
+				this.$refs.editortoolbar.resetCreate();
+			}
+		}
+
+	},
   render() {
     let toolbars = [];
 
     if (this.toolbar.editor) {
       toolbars.push(
-        <editor-toolbar
+				<editor-toolbar
+					ref="editortoolbar"
           onselectlayer={this.onSelectLayer}
-          clicksubmenu={this.clicksubmenu}
+					clicksubmenu={this.clicksubmenu}
+					click={this.clickmenu}
           layer={this.layer}
         />
       );
