@@ -46,7 +46,7 @@ export default {
         }
       ],
       toolbar: {
-        editor: true,
+        editor: false,
         measure: false
       },
       map: {

@@ -1,11 +1,10 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const merge = require('webpack-merge');
 const webpackBaseConfig = require('./webpack.base.config.js');
 const fs = require('fs');
-const path = require('path');
-const pkg = require('./package.json');
 
 fs.open('./src/config/env.js', 'w', function(err, fd) {
     const buf = 'export default "production";';
@@ -14,12 +13,14 @@ fs.open('./src/config/env.js', 'w', function(err, fd) {
 
 module.exports = merge(webpackBaseConfig, {
     output: {
-        path: path.join(__dirname, './dist', `/${pkg.version}`),
-        publicPath: '/',
+        publicPath: '',
         filename: 'js/[name].[hash].js',
         chunkFilename: 'js/[name].[hash].chunk.js'
     },
     plugins: [
+        new CleanWebpackPlugin(['dist'], {
+            verbose: true
+        }),
         new ExtractTextPlugin({
             filename: 'css/[name].[hash].css',
             allChunks: true
