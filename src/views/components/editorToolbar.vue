@@ -196,16 +196,22 @@ export default {
           this._setSumenuDisabledStatus(actionTypes.EDITOR_CREATE_END, true);
 					break;
         }
-        
+
 				case actionTypes.EDITOR_MODIFY_START: {
+
+          this._setSumenuDisabledStatus(actionTypes.EDITOR_MODIFY_START, true);
+          this._setSumenuDisabledStatus(actionTypes.EDITOR_MODIFY_END, false);
           break;
         }
 
 				case actionTypes.EDITOR_MODIFY_END: {
+
+          this._setSumenuDisabledStatus(actionTypes.EDITOR_MODIFY_START, false);
+          this._setSumenuDisabledStatus(actionTypes.EDITOR_MODIFY_END, true);
           break;
         }
 				default: {
-					console.log(e, ctx);
+          window.logger.error('menu error %s', name);
         }
       }
 

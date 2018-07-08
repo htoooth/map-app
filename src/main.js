@@ -12,6 +12,7 @@ import 'maptalks/dist/maptalks.css';
 
 import 'static/easy-ui/themes/default/easyui.css';
 import 'static/easy-ui/themes/icon.css';
+import 'static/easy-ui/jquery.easyui.min';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);

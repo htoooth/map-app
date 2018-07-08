@@ -10,3 +10,7 @@ import clipboard from 'clipboard';
 import * as maptalks from 'maptalks';
 import _ from 'lodash';
 
+import jQuery from 'static/easy-ui/jquery.min';
+
+window.jQuery = jQuery;
+window.$ = jQuery;
