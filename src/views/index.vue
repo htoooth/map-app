@@ -37,7 +37,7 @@ export default {
 				layer: null
 			}],
 			toolbar: {
-				editor: false,
+				editor: true,
 				measure: false
 			},
 			map: {
@@ -51,6 +51,16 @@ export default {
 					all: [],
 					visual: [],
 					edit: null
+				},
+				geoms: {
+					select: null,
+					edit: []
+				},
+				status: {
+					editMode: false,
+					select: false,
+					modify: false,
+					create: false,
 				}
 			},
 			toc: {
@@ -68,9 +78,12 @@ export default {
   },
   methods: {
 		initMap() {
+			let self = this;
+
 			this.map.$map = new maptalks.Map(this.id, {
         center: [-0.113049, 51.498568],
-        zoom: 14,
+				zoom: 14,
+				doubleClickZoom: false,
         baseLayer: new maptalks.TileLayer("base", {
           urlTemplate:
             "http://www.google.cn/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i342009817!3m9!2sen-US!3sCN!5e18!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!4e0&token=32965",
@@ -81,7 +94,48 @@ export default {
 
 			// click;
 			this.map.$map.on('click', (e) => {
+				window.logger.info('map click %o', e.coordinate);
+				let layer = self.map.layers.edit ? self.map.layers.edit : null;
 
+				if (!layer) {
+					return window.logger.info('no edit layer');
+				}
+
+				if (!self.map.status.select) {
+					return;
+				}
+
+				layer.forEach((geom) => {
+					geom.updateSymbol({
+						'lineColor': '#34495e'
+					})
+				});
+
+				this.map.$map.identify({
+					coordinate: e.coordinate,
+					layers: [layer]
+				}, function(geoms) {
+
+					if (geoms.length === 0) {
+						window.logger.info('no geom selected');
+						return;
+					}
+
+					window.logger.info('%d geom selected', geoms.length);
+
+					geoms.forEach(geom => {
+						geom.updateSymbol({
+							'lineColor': '#f00'
+						});
+					});
+
+				});
+
+				return false;
+			});
+
+			this.map.$map.on('dblClick', (e) => {
+				window.logger.info('map dblClick %o', e.coordinate);
 			});
 		},
 		initMeasureLineTool() {
@@ -242,6 +296,7 @@ export default {
 					if (e.iconCls === 'icon-ok') {
 						ctx.menu('setIcon', {target:e.target, iconCls: 'icon-blank'})
 						this.toolbar.editor = false;
+						this.map.layers.edit = false;
 					}
 
 					break;
@@ -261,40 +316,53 @@ export default {
 					break;
 				}
 				case actionTypes.EDITOR_SELECT_START: {
-
+		
+					this.map.status.select = true;
 					break;
 				}
 				case actionTypes.EDITOR_SELECT_END: {
 
+					this.map.status.select = false;
+					this.clearSelectGeom();
 					break;
 				}
-				case actionTypes.EDITOR_EDIT_START: {
+				case actionTypes.EDITOR_EDIT_MODE_START: {
+					this.map.status.edit = true;
 
 					break;
 				}
-				case actionTypes.EDITOR_EDIT_SAVE: {
-
+				case actionTypes.EDITOR_EDIT_MODE_SAVE: {
+					this.map.status.edit = false;
 					break;
 				}
 
-				case actionTypes.EDITOR_EDIT_END: {
-
+				case actionTypes.EDITOR_EDIT_MODE_END: {
+					this.map.tool.drawTool.disable();
 					break;
 				}
 				case actionTypes.EDITOR_CREATE_START: {
 					this.map.tool.drawTool.setMode(this.map.layers.edit.geometryType).enable();
-					break;
-				}
-				case actionTypes.EDITOR_CREATE_SAVE: {
-					break;
-				}
-				case actionTypes.EDITOR_CREATE_END: {
-					this.map.tool.drawTool.disable();
+					this.map.status.create = true;
 					break;
 				}
 
+				case actionTypes.EDITOR_CREATE_END: {
+					this.map.tool.drawTool.disable();
+					this.map.status.create = false;
+					break;
+				}
+
+				case actionTypes.EDITOR_MODIFY_START: {
+					this.map.status.modify = true;
+          break;
+        }
+
+				case actionTypes.EDITOR_MODIFY_END: {
+					this.map.status.modify = false;
+          break;
+        }
 				default: {
-					console.log(e, ctx);
+					window.logger.error('cannt find menu %s', name);
 				}
 			}
 		},
@@ -324,7 +392,7 @@ export default {
 					break;
 				}
 				default: {
-					console.log(ctx);
+					window.logger.error('cannot find menu %s', name);
 				}
 			}
 		},
@@ -372,9 +440,23 @@ export default {
 			return info;
 		},
 		onSelectLayer(id) {
-			console.log(id);
 			let layerInfo = this._findLayerById(id);
 			this.map.layers.edit = layerInfo.layer;
+
+			window.logger.info('edittoolbar select layer %s', id);
+		},
+		clearSelectGeom() {
+			let layer = this.map.layers.edit ? this.map.layers.edit : null;
+
+			if (!layer) {
+				return window.logger.info('no edit layer');
+			}
+
+			layer.forEach((geom) => {
+				geom.updateSymbol({
+					'lineColor': '#34495e'
+				})
+			});
 		}
 	},
 	components: {

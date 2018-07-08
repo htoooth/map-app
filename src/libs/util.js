@@ -20,4 +20,18 @@ util.ajax = axios.create({
     timeout: 30000
 });
 
+util.findInArrays = function(pre, ...res) {
+    let menu;
+
+    for (let i = 0; i< res.length; i++) {
+        menu = res[i].find(pre)
+
+        if (menu) {
+            return menu;
+        }
+    }
+
+    return menu;
+}
+
 export default util;

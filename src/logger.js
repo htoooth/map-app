@@ -1,13 +1,23 @@
 
+import debug from 'debug';
+
+debug.enable('app:*');
+
 class Logger {
-    info() {
-        console.log(arguments);  // eslint-disable-line
+    constructor() {
+        this.infoLog = debug('app:info');
+        this.debugLog = debug('app:debug');
+        this.errorLog = debug('app:error');
     }
-    debug() {
-        console.log(arguments);  // eslint-disable-line
+
+    info(...res) {
+        this.infoLog(...res);
     }
-    error() {
-        console.error(arguments);  // eslint-disable-line
+    debug(...res) {
+        this.debugLog(...res);
+    }
+    error(...res) {
+        this.errorLog(...res);
     }
 }
 

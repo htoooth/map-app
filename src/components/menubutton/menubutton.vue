@@ -50,6 +50,9 @@ export default {
     opts: {
       deep: true,
       handler(newVal, oldVal) {
+        if (!this.$menubutton) {
+          return;
+        }
         if (newVal.disabled) {
           this.$menubutton.menubutton('disable');
         } else {
