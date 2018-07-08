@@ -14,17 +14,17 @@ module.exports = merge(webpackBaseConfig, {
     devtool: '#source-map',
     output: {
         publicPath: '/dist/',
-        filename: '[name].js',
-        chunkFilename: '[name].chunk.js'
+        filename: 'js/[name].js',
+        chunkFilename: 'js/[name].chunk.js'
     },
     plugins: [
         new ExtractTextPlugin({
-            filename: '[name].css',
+            filename: 'css/[name].css',
             allChunks: true
         }),
         new webpack.optimize.CommonsChunkPlugin({
             name: 'vendors',
-            filename: 'vendors.js'
+            filename: 'js/vendors.js'
         }),
         new HtmlWebpackPlugin({
             filename: '../index.html',

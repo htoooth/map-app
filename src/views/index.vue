@@ -308,6 +308,9 @@ export default {
 				}
 				case actionTypes.EDITOR_REMOVE: {
 					this._removeGeoms();
+
+          this.map.status.select = false;
+					this.map.status.modify = false;
 					break;
 				}
         default: {

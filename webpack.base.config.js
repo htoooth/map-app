@@ -66,8 +66,12 @@ module.exports = {
             },
 
             {
-                test: /\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
-                loader: 'url-loader?limit=1024'
+                test: /\.(gif|jpg|png)\??.*$/,
+                loader: 'url-loader?limit=1024&name=image/[name].[hash:7].[ext]'
+            },
+            {
+                test: /\.(woff|svg|eot|ttf)\??.*$/,
+                loader: 'url-loader?limit=1024&name=font/[name].[hash:7].[ext]'
             },
             {
                 test: /\.(html|tpl)$/,
