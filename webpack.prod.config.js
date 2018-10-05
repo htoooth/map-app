@@ -7,12 +7,12 @@ const webpackBaseConfig = require('./webpack.base.config.js');
 
 module.exports = merge(webpackBaseConfig, {
     output: {
-        publicPath: '',
+        publicPath: '/map-app/dist/',
         filename: 'js/[name].[hash].js',
         chunkFilename: 'js/[name].[hash].chunk.js'
     },
     plugins: [
-        new CleanWebpackPlugin(['docs'], {
+        new CleanWebpackPlugin(['dist'], {
             verbose: true
         }),
         new ExtractTextPlugin({

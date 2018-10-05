@@ -1,4 +1,4 @@
 # Squirtle
 
-A map app based easyui, vue and maptalk.
+A web map app based on easyui, vue and maptalks.
 
