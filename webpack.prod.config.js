@@ -12,7 +12,7 @@ module.exports = merge(webpackBaseConfig, {
         chunkFilename: 'js/[name].[hash].chunk.js'
     },
     plugins: [
-        new CleanWebpackPlugin(['dist'], {
+        new CleanWebpackPlugin(['doc'], {
             verbose: true
         }),
         new ExtractTextPlugin({
@@ -34,7 +34,7 @@ module.exports = merge(webpackBaseConfig, {
             }
         }),
         new HtmlWebpackPlugin({
-            filename: 'mapapp.html',
+            filename: 'index.html',
             template: './src/template/index.ejs',
             inject: false
         })
