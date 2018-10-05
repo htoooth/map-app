@@ -12,7 +12,7 @@ module.exports = {
         vendors: './src/vendors'
     },
     output: {
-        path: path.join(__dirname, './doc')
+        path: path.join(__dirname, './docs')
     },
     module: {
         rules: [{
