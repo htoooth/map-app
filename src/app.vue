@@ -11,7 +11,7 @@
             };
         },
         mounted() {
-            window.$.parser.parse();
+            // window.$.parser.parse();
         },
         beforeDestroy() {
 
